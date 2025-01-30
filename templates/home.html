@@ -1,0 +1,28 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<br>
+<div class="jumbotron text-center" style="background-color: rgba(255, 255, 255, 0.7);">
+    {% if session.logged_in == NULL%}
+        <h2>Добро пожаловать в веб-приложение чата</h2>
+        <p class="lead">Ваши данные в безопасности благодаря шифрованию и мерам по защите конфиденциальности. <br> Пожалуйста, войдите в свою учетную запись, чтобы получить доступ к вашим чатам</p>
+        <a href="/register" class="btn btn-primary btn-lg">Зарегистрироваться</a>
+        <a href="/login" class="btn btn-success btn-lg">Авторизоваться</a>
+    {% else %}
+        <h1>Приветсвуем, {{ session.s_name }}</h1>
+        <p class="lead">При отравке сообщений данные шифруются<br> и хранятся в базе данных в зашифрованном виде</p>
+        <a href="/chatting/{{ session.uid }}" class="btn btn-primary btn-lg">Перейти в чат-комнаты</a>
+        <h3>Пользователей онлайн: <span id="online-users-count">{{ online_users_count }}</span></h3>
+        <script>
+            function updateOnlineUsersCount() {
+                $.getJSON('/online_users_count', function(data) {
+                    $('#online-users-count').text(data.count);
+                });
+            }
+    
+            // Обновляем каждые 5 секунд
+            setInterval(updateOnlineUsersCount, 5000);
+        </script>
+    {% endif %}
+</div>
+{% endblock %}

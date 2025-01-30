@@ -1,0 +1,95 @@
+{% extends 'layout.html' %}
+{% block body %}
+<script>
+    let hasScrolledToBottom = false; // Флаг, указывающий, было ли скроллинг вниз
+
+    function ajax() {
+        var req = new XMLHttpRequest();
+        req.onreadystatechange = function() {
+            if (req.readyState == 4 && req.status == 200) {
+                let chatsElement = document.getElementById('chats');
+                if (!chatsElement) {
+                    chatsElement = document.createElement('div');
+                    chatsElement.id = 'chats';
+                    document.body.appendChild(chatsElement);
+                }
+                chatsElement.innerHTML = req.responseText;
+
+                // Прокручиваем chat-box вниз только один раз при первой загрузке
+                if (!hasScrolledToBottom) {
+                    let chatBox = document.getElementById('chat-box');
+                    if (chatBox) {
+                        chatBox.scrollTop = chatBox.scrollHeight; // Прокрутка вниз
+                        hasScrolledToBottom = true; // Устанавливаем флаг в true после скроллинга
+                    }
+                }
+            }
+        }
+        req.open('POST', '/chats', true);
+        req.send();
+    }
+
+    setInterval(function(){ ajax() }, 1000);
+</script>
+
+<div class="row" onload="ajax();">
+    <div class="col-xs-1"></div>
+    <div class="col-xs-4" style="background-color: #f5f5f5;margin: 0px 10px;border-radius: 4px; padding: 10px 20px 20px 20px;">
+        <div style="text-align: center;font-size: 18px;background-color: #ddd;border-radius: 4px;color: #5e5fa4;margin-bottom: 8px;">
+            <span>Пользователи в чате</span>
+        </div>
+        <ul class="list-group">
+            {% for user in users %}
+                {% if user.id != session['uid'] %}
+                    <li class="list-group-item"><a href="{{ user.id }}"> {{ user.username }} </a>
+                        {% if user.online != "0" %}
+                            {% if user.id in users_sessions and users_sessions[user.id]['first_seen'] %}
+                                <span style="height: 12px;width: 12px;background-color: #1fc124;border-radius: 6px;
+                                float: right;margin-top: 5px;"></span>
+                                <br>
+                                (В сети c: {{ users_sessions[user.id]['first_seen'].strftime('%H:%M:%S %d-%m-%Y') }})
+                            {% endif %}
+                        {% else %}
+                            {% if user.id in users_sessions and users_sessions[user.id]['last_seen'] %}
+                                <span style="height: 12px;width: 12px;background-color: #8a8a8a;border-radius: 6px;
+                                float: right;margin-top: 5px;"></span>
+                                <br>
+                                (Последний раз в сети: {{ users_sessions[user.id]['last_seen'].strftime('%H:%M:%S %d-%m-%Y') }})
+                            {% endif %}
+                        {% endif %}
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>        
+    </div>
+    <div class="col-xs-6" style="background-color: #f5f5f5;margin: 0px 10px;border-radius: 4px; padding: 10px 20px 20px 20px;">
+
+        {% if session.lid %}
+            {% if session.name != session.s_name %}
+                <div style="text-align: center;font-size: 18px; color: #22aa45;background-color: #ddd;border-radius: 4px;">
+                    <span>{{ session.name}}</span>
+                </div>
+                <div id="chat-box" style="overflow-y: scroll; height: 350px; padding: 10px 0px 0px 0px;">
+                    <div id="chats"></div>
+                </div>
+                {% from "includes/_formhelpers.html" import render_field %}
+                <div>
+                    <form method="POST" action="">
+                    <div class="form-group">
+                        {{render_field(form.body, class_="form-control", value="", placeholder="Введите свой текст")}}
+                    </div>
+                    <button type="submit" class="btn btn-primary pull-right">Отправить</button>
+                    </form>
+                </div>
+            {% else %}
+                <div style="text-align: center;">
+                    <h1>Вы в чат-комнате</h1>
+                    <p class="lead">Выберите чат с пользователем</p>
+                </div>
+            {% endif %}
+        {% endif %}
+
+    </div>
+    <div class="col-xs-1"></div>
+</div>
+{% endblock %}

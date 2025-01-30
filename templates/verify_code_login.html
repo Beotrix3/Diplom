@@ -1,0 +1,16 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div class="jumbotron" style="background-color: rgba(255, 255, 255, 0.7);">
+    <h2 style="text-align: center; color: #206aaa;">Введите двухфакторный код</h2>
+    <form method="POST" action="{{ url_for('verify_code_login') }}">
+        <div class="form-group">
+            <label for="two_factor_code">Код:</label>
+            <input type="text" name="two_factor_code" class="form-control" required>
+        </div>
+        <p>
+            <input type="submit" class="btn btn-primary" value="Проверить код">
+        </p>
+    </form>
+</div>
+{% endblock %}
